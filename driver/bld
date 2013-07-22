@@ -1,0 +1,2 @@
+#!/bin/bash
+arm-linux-gnueabihf-g++ -g -o driver driver.cpp image.cpp -lusb-1.0
