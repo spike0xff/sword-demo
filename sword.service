@@ -4,10 +4,11 @@
 <!-- This file is part of SWORD -->
 
 <service-group>
-  <name replace-wildcards="yes">SWORD Network Scanner</name>
+  <name replace-wildcards="yes">Kodak i1120 (SWORD)</name>
 
   <service>
     <type>_sword._tcp</type>
     <port>80</port>
+    <txt-record>port=80</txt-record>
   </service>
 </service-group>
