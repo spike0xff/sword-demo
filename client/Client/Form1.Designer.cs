@@ -39,7 +39,7 @@
             // 
             // m_buttonScan
             // 
-            this.m_buttonScan.Location = new System.Drawing.Point(458, 248);
+            this.m_buttonScan.Location = new System.Drawing.Point(476, 382);
             this.m_buttonScan.Name = "m_buttonScan";
             this.m_buttonScan.Size = new System.Drawing.Size(75, 23);
             this.m_buttonScan.TabIndex = 0;
@@ -49,7 +49,7 @@
             // 
             // m_buttonStop
             // 
-            this.m_buttonStop.Location = new System.Drawing.Point(539, 248);
+            this.m_buttonStop.Location = new System.Drawing.Point(557, 382);
             this.m_buttonStop.Name = "m_buttonStop";
             this.m_buttonStop.Size = new System.Drawing.Size(75, 23);
             this.m_buttonStop.TabIndex = 1;
@@ -100,7 +100,7 @@
             // 
             this.m_richtextboxDiagnostics.Location = new System.Drawing.Point(16, 82);
             this.m_richtextboxDiagnostics.Name = "m_richtextboxDiagnostics";
-            this.m_richtextboxDiagnostics.Size = new System.Drawing.Size(598, 146);
+            this.m_richtextboxDiagnostics.Size = new System.Drawing.Size(616, 279);
             this.m_richtextboxDiagnostics.TabIndex = 6;
             this.m_richtextboxDiagnostics.Text = "";
             // 
@@ -109,7 +109,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.LightGray;
-            this.ClientSize = new System.Drawing.Size(626, 283);
+            this.ClientSize = new System.Drawing.Size(644, 417);
             this.Controls.Add(this.m_richtextboxDiagnostics);
             this.Controls.Add(this.m_comboxBoxResolution);
             this.Controls.Add(this.m_labelResolution);

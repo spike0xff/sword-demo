@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Net;
 using System.Text;
 using System.Windows.Forms;
@@ -16,14 +17,20 @@ namespace Client
         {
             using (WebClient client = new WebClient())
             {
+                this.m_richtextboxDiagnostics.Clear();
                 System.Collections.Specialized.NameValueCollection reqparm = new System.Collections.Specialized.NameValueCollection();
                 reqparm.Add
                 (
                     "sword",
                     "<sword><scan></scan></sword>"
                 );
-                byte[] responsebytes = client.UploadValues("http://172.16.2.13:12345", "POST", reqparm);
+                string values =
+                    string.Join(", ", reqparm.AllKeys.Select(key => key + ": " + reqparm[key]).ToArray());
+                    //string.Join(",", reqparm.AllKeys.SelectMany(key => reqparm.GetValues(key)));
+                this.m_richtextboxDiagnostics.AppendText("POST: " + values + "\n");
+                byte[] responsebytes = client.UploadValues("http://192.168.1.137:80", "POST", reqparm);
                 string responsebody = Encoding.UTF8.GetString(responsebytes);
+                this.m_richtextboxDiagnostics.AppendText("response: " + responsebody + "\n");
             }
         }
     }
