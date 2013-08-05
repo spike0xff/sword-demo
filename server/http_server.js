@@ -7,7 +7,7 @@ http.createServer( function(req,res) {
    var currentTime = new Date();
    console.log('Client called at '+currentTime);
 
-   if (req.method == 'POST') {
+   if (req.method == 'POST' || req.method == 'GET') {
       var body = '';
       req.on('data', function(data) {
          body += data;
