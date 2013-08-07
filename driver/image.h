@@ -10,7 +10,7 @@ class CImage
 		~CImage();
 		void Close();
 		void Create(const char *name);
-		void WriteHeader(ScsiWindow *pscsiwindow, int size);
+		void WriteHeader(ScsiWindow *pscsiwindow, int size, char *szMeta);
 		void WriteImage(const unsigned char *data, const int len);
 
 	private:

@@ -102,7 +102,7 @@ void CImage::Create(const char *name)
 	pod.m_pfile = fopen(name,"w");
 }
 
-void CImage::WriteHeader(ScsiWindow *pscsiwindow, int size)
+void CImage::WriteHeader(ScsiWindow *pscsiwindow, int size, char *szMeta)
 {
 	TiffBitonal tiffbitonal;
 	TiffGray tiffgray;
@@ -127,6 +127,26 @@ void CImage::WriteHeader(ScsiWindow *pscsiwindow, int size)
 				tiffbitonal.u32XResolution[0]     = WX(pscsiwindow->X_resolution);
 				tiffbitonal.u32YResolution[0]     = WX(pscsiwindow->Y_resolution);
 				fwrite(&tiffbitonal,1,sizeof(tiffbitonal),pod.m_pfile);
+				if (szMeta)
+				{
+					sprintf
+					(
+						szMeta,
+						"<sword>\n"
+						"\t<pixel>bw</pixel>\n"
+						"\t<resolution>%d</resolution>\n"
+						"\t<size>%d</size>\n"
+						"\t<width>%d</width>\n"
+						"\t<height>%d</height>\n"
+						"\t<bytesperrow>%d</bytesperrow>\n"
+						"</sword>\n",
+						WX(pscsiwindow->X_resolution),
+						sizeof(tiffbitonal) + size,
+						UX(tiffbitonal.tifftag[2].u32Value),
+						UX(tiffbitonal.tifftag[3].u32Value),
+						tiffbitonal.tifftag[10].u32Value
+					);
+				}
 				break;
 			case 2:
 				memcpy(&tiffgray,&s_tiffgray,sizeof(tiffgray));
@@ -138,6 +158,26 @@ void CImage::WriteHeader(ScsiWindow *pscsiwindow, int size)
 				tiffgray.u32XResolution[0]     = WX(pscsiwindow->X_resolution);
 				tiffgray.u32YResolution[0]     = WX(pscsiwindow->Y_resolution);
 				fwrite(&tiffgray,1,sizeof(tiffgray),pod.m_pfile);
+				if (szMeta)
+				{
+					sprintf
+					(
+						szMeta,
+						"<sword>\n"
+						"\t<pixel>gray</pixel>\n"
+						"\t<resolution>%d</resolution>\n"
+						"\t<size>%d</size>\n"
+						"\t<width>%d</width>\n"
+						"\t<height>%d</height>\n"
+						"\t<bytesperrow>%d</bytesperrow>\n"
+						"</sword>\n",
+						WX(pscsiwindow->X_resolution),
+						sizeof(tiffgray) + size,
+						tiffgray.tifftag[2].u32Value,
+						tiffgray.tifftag[3].u32Value,
+						tiffgray.tifftag[9].u32Value
+					);
+				}
 				break;
 			case 5:
 				memcpy(&tiffcolor,&s_tiffcolor,sizeof(tiffcolor));
@@ -149,6 +189,26 @@ void CImage::WriteHeader(ScsiWindow *pscsiwindow, int size)
 				tiffcolor.u32XResolution[0]     = WX(pscsiwindow->X_resolution);
 				tiffcolor.u32YResolution[0]     = WX(pscsiwindow->Y_resolution);
 				fwrite(&tiffcolor,1,sizeof(tiffcolor),pod.m_pfile);
+				if (szMeta)
+				{
+					sprintf
+					(
+						szMeta,
+						"<sword>\n"
+						"\t<pixel>color</pixel>\n"
+						"\t<resolution>%d</resolution>\n"
+						"\t<size>%d</size>\n"
+						"\t<width>%d</width>\n"
+						"\t<height>%d</height>\n"
+						"\t<bytesperrow>%d</bytesperrow>\n"
+						"</sword>\n",
+						WX(pscsiwindow->X_resolution),
+						sizeof(tiffcolor) + size,
+						UX(tiffcolor.tifftag[2].u32Value),
+						UX(tiffcolor.tifftag[3].u32Value),
+						tiffcolor.tifftag[9].u32Value
+					);
+				}
 				break;
 		}
 	}

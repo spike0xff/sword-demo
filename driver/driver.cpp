@@ -51,7 +51,7 @@ void CScanner::Inquiry()
 	unsigned char bSts;
 	unsigned char abCmd[10];
 	ScsiInquiry scsiinquiry;
-	printf("\n");
+	Log("\n",0,0);
 
 	// Send command...
 	memcpy(abCmd,"\x12\x00\x00\x00\x60\x00\x00\x00\x00\x00",sizeof(abCmd));
@@ -106,7 +106,7 @@ void CScanner::LampCheck()
 	// Wait until the lamps are ready...
 	for (ii = 0; ii < 30; ii++)
 	{
-		printf("\n");
+		Log("\n",0,0);
 
 		// Send command...
 		memcpy(abCmd,"\x28\x00\xa0\x00\x0a\x0d\x00\x00\x01\x00",10);
@@ -150,7 +150,7 @@ void CScanner::MediaCheck()
 	// Until we see paper...
 	for (ii = 0; ii < 30; ii++)
 	{
-		printf("\n");
+		Log("\n",0,0);
 
         // Send command...
         memcpy(abCmd,"\x08\x00\x00\x00\x01\x00\x00\x00\x00\x00",10);
@@ -183,11 +183,11 @@ void CScanner::MediaCheck()
 }
 
 // Open the scanner...
-bool CScanner::Open()
+bool CScanner::Open(bool blHtml)
 {
 	if (pod.m_blLibUsbExit)
 	{
-		printf("already open...\n");
+		Log("already open...\n",0,0);
 		return (false);
 	}
 
@@ -197,11 +197,15 @@ bool CScanner::Open()
 	pod.m_handle = libusb_open_device_with_vid_pid(0,0x40a,0x6013);
 	if (!pod.m_handle)
 	{
-		printf("not found...\n");
+		Log("not found...\n",0,0);
 		return (false);
 	}
 	libusb_claim_interface(pod.m_handle,0);
-	printf("found...\n");
+	if (!blHtml)
+	{
+		Log("found...\n",0,0);
+	}
+	pod.m_blHtml = blHtml;
 	return (true);
 }
 
@@ -212,7 +216,7 @@ void CScanner::GetCalibrationFormat()
 	unsigned char bSts;
 	unsigned char abCmd[16];
 	unsigned char ab32[32];
-	printf("\n");
+	Log("\n",0,0);
 
 	// Send command...
 	iXfer = 0;
@@ -260,7 +264,7 @@ void CScanner::ReadImage()
 	pod.m_pimage->Create("image.tif");
 
 	// Write the header, so we get the proper offset...
-	pod.m_pimage->WriteHeader(&pod.m_scsiwindow,0);
+	pod.m_pimage->WriteHeader(&pod.m_scsiwindow,0,0);
 
 	// We can setup the read command once and reuse it...
 	memcpy(abCmd,"\x28\x00\x00\x00\x0a\x0d\x03\xf4\xe0\x00",10);
@@ -272,7 +276,7 @@ void CScanner::ReadImage()
 	iTotal = 0;
 	while (bSts == 0)
 	{ 
-		printf("\n");
+		Log("\n",0,0);
 
 		// Send command...
 		Log("readimage.cmd: ",abCmd,10);
@@ -303,7 +307,9 @@ void CScanner::ReadImage()
 
 	// Rewrite the header, so we get the proper meta-data...
 	memcpy(&scsiwindow,&pod.m_scsiwindow,sizeof(scsiwindow));
-	pod.m_pimage->WriteHeader(&scsiwindow,iTotal);
+	pod.m_pimage->WriteHeader(&scsiwindow,iTotal,pod.m_szMeta);
+	printf("%s",pod.m_szMeta);
+	fflush(stdout);
 
 	// Close the file...
 	pod.m_pimage->Close();
@@ -325,7 +331,7 @@ void CScanner::ReleaseUnit()
     int iXfer;
     unsigned char bSts;
     unsigned char abCmd[16];
-	printf("\n");
+	Log("\n",0,0);
 
     // Send command...
     memcpy(abCmd,"\x17\x00\x00\x00\x00\x00\x00\x00\x00\x00",10);
@@ -350,7 +356,7 @@ void CScanner::RequestSense()
     unsigned char bSts;
     unsigned char abCmd[16];
     ScsiSense scsisense;
-	printf("\n");
+	Log("\n",0,0);
 
     // Send command...
     memcpy(abCmd,"\x03\x00\x00\x00\x16\x00\x00\x00\x00\x00",10);
@@ -373,7 +379,7 @@ void CScanner::ReserveUnit()
     int iXfer;
     unsigned char bSts;
     unsigned char abCmd[16];
-	printf("\n");
+	Log("\n",0,0);
 
     // Send command...
     memcpy(abCmd,"\x16\x00\x00\x00\x00\x00\x00\x00\x00\x00",10);
@@ -397,7 +403,7 @@ void CScanner::Scan()
     int iXfer;
     unsigned char bSts;
     unsigned char abCmd[16];
-	printf("\n");
+	Log("\n",0,0);
 
     // Send command...
     memcpy(abCmd,"\x1b\x00\x00\x00\x01\x00\x00\x00\x00\x00",10);
@@ -422,7 +428,7 @@ void CScanner::Send3x3ColorMatrix()
     unsigned char bSts;
     unsigned char abCmd[16];
     unsigned char ab3x3ColorMatrix[18];
-	printf("\n");
+	Log("\n",0,0);
 
     // Send command...
     memcpy(abCmd,"\x2a\x00\x83\x00\x00\x00\x00\x00\x12\x00",10);
@@ -436,7 +442,7 @@ void CScanner::Send3x3ColorMatrix()
 
     // Read status...
     In(&bSts,1,&iXfer);
-    printf("send3x3colormatrix.srb: %d\n",bSts);
+    Log("send3x3colormatrix.srb: %d\n",&bSts,1);
 
 	// Handle sense...
 	if (bSts == 0x02)
@@ -457,7 +463,7 @@ void CScanner::SendGammaTables()
 	// Three of them...
 	for (ii = 0; ii < 3; ii++)
 	{
-		printf("\n");
+		Log("\n",0,0);
 
         // Send command...
         memcpy(abCmd,"\x2a\x00\x81\x00\x00\x00\x00\x02\x00\x00",10);
@@ -526,7 +532,7 @@ void CScanner::SetWindow(EPIXELTYPE epixeltype, int iResolution, bool blDuplex)
 	unsigned char bSts;
 	unsigned char abCmd[16];
 	ScsiWindow scsiwindow;
-	printf("\n");
+	Log("\n",0,0);
 
 	// Send command...
 	memcpy(abCmd,"\x24\x00\x00\x00\x00\x00\x00\x00\x00\x00",10);
@@ -647,7 +653,7 @@ void CScanner::TestUnitReady()
 	// Loopy...
 	for (;;)
 	{
-		printf("\n");
+		Log("\n",0,0);
 
 		// Send command...
 		memcpy(abCmd,"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00",10);
@@ -707,6 +713,22 @@ void CScanner::Log(const char *title, const void *data, int len)
 {
 	int ii;
 	const int limit = 100;
+
+	// Skip it...
+	if (pod.m_blHtml)
+	{
+		return;
+	}
+
+	// Print text...
+	if (!data)
+	{
+		printf("%s",title);
+		fflush(stdout);
+		return;
+	}
+
+	// Display it...
 	printf("%s",title);
 	if (data)
 	{
@@ -731,6 +753,7 @@ int main(int argc, char *argv[])
 	EPIXELTYPE epixeltype = PIXELTYPE_GRAY;
 	int iResolution = 200;
 	bool blDuplex = false;
+	bool blHtml = false;
 
 	// Parse for arguments...
 	for (ii = 1; ii < argc; ii++)
@@ -789,10 +812,14 @@ int main(int argc, char *argv[])
 				return (1);
 			}
 		}
+		else if (!strncasecmp(argv[ii],"html",4))
+		{
+			blHtml = true;
+		}
 	}
 	
 	// Scan...
-	if (!scanner.Open()) return(1);
+	if (!scanner.Open(blHtml)) return(1);
 	scanner.Inquiry();
 	scanner.LampCheck();
 	scanner.MediaCheck();

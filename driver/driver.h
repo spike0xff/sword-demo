@@ -12,7 +12,7 @@ class CScanner
 		void Inquiry();
 		void LampCheck();
 		void MediaCheck();
-		bool Open();
+		bool Open(bool blHtml);
 		void GetCalibrationFormat();
 		void ReadImage();
 		void ReleaseUnit();
@@ -40,6 +40,8 @@ class CScanner
 			char					m_szPath[512];
 			int						m_iImage;
 			int						m_iStripeSize;
+			bool					m_blHtml;
+			char					m_szMeta[65536];
 		} pod;
 };
 
