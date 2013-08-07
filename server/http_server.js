@@ -20,8 +20,9 @@ http.createServer( function(req,res) {
 
       // Handle the response...
       req.on('end', function() {
-         // Issue a command...
-         var child = spawn(path.join(process.cwd(), '../driver/driver'), ["html"]);
+         // Spawn the scanner driver.
+         // assumes this .js file is in the sword-demo/server directory
+         var child = spawn(path.join(__dirname, '../driver/driver'), ["html"]);
          var output = '';
 
          // Collect the data on standard in and error...
@@ -31,6 +32,7 @@ http.createServer( function(req,res) {
          });
          child.stderr.on('data', function(data) {
             console.log('stderr: ' + data);
+            output += 'STDERR: ' + data;
          });
 
          // Write the response...
