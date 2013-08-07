@@ -1,23 +1,23 @@
 var http = require('http');
 var url = require('url');
+var querystring = require('querystring');
 var util = require('util');
 var fs = require('fs');
 var path = require('path');
 var spawn = require('child_process').spawn;
 
 http.createServer( function(req,res) {
-   var currentTime = new Date();
-   console.log('Client called at '+currentTime);
-   console.log('cwd:' + process.cwd());
-   console.log(req);
-
    // parse the URL into protocol, host, port, pathname, etc.
    var request = url.parse(req.url, true);
+
+   console.log('cwd:' + process.cwd());
+   console.log('parsed request:');
+   console.log(request);
 
    if (req.method == 'GET' && request.pathname == '/image.tif') {
       // send the file
       var filepath = path.join(__dirname, request.pathname);
-      console.log('reading file: '+filepath);
+      console.log('serving file: '+filepath);
       var file = fs.readFileSync(filepath);
       var stat = fs.statSync(filepath);
       res.writeHead(200, "OK", {
@@ -35,9 +35,17 @@ http.createServer( function(req,res) {
 
       // When the POST or GET has been completely received
       req.on('end', function() {
+         // parse the query data
+         req.post = querystring.parse(body);
+         console.log('parsed query data:');
+         console.log(req.post);
          // Spawn the scanner driver.
          // assumes this .js file is in the sword-demo/server directory
-         var child = spawn(path.join(__dirname, '../driver/driver'), ["html"]);
+         var args =
+            ["pixeltype="+req.post.pixelType, "resolution="+req.post.resolution, "html"];
+         console.log('driver args:');
+         console.log(args);
+         var child = spawn(path.join(__dirname, '../driver/driver'),args);
          var output = '';
 
          // Collect the data on standard in and error...
