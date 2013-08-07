@@ -24,21 +24,61 @@ namespace Client
             using (WebClient client = new WebClient())
             {
                 this.m_richtextboxDiagnostics.Clear();
+                this.m_richtextboxDiagnostics.Update();
+
+                // Collect scan settings from UI
+                string pixelType;
+                switch (this.m_comboboxColor.SelectedIndex)
+                {
+                    case 0:
+                        pixelType = "bw";
+                        break;
+                    case 1:
+                        pixelType = "gray";
+                        break;
+                    case 2:
+                        pixelType = "color";
+                        break;
+                    default:
+                         throw new Exception("invalid pixel type");
+                }
+                string resolution = this.m_comboxBoxResolution.SelectedItem as string;
+
+                // Format the POST
                 System.Collections.Specialized.NameValueCollection reqparm = new System.Collections.Specialized.NameValueCollection();
                 reqparm.Add
                 (
                     "sword",
                     "<sword><scan></scan></sword>"
                 );
+                reqparm.Add("pixelType", pixelType);
+                reqparm.Add("resolution", resolution);
                 string values =
                     string.Join(", ", reqparm.AllKeys.Select(key => key + ": " + reqparm[key]).ToArray());
                     //string.Join(",", reqparm.AllKeys.SelectMany(key => reqparm.GetValues(key)));
                 this.m_richtextboxDiagnostics.AppendText("POST: " + values + "\n");
+                this.m_richtextboxDiagnostics.Update();
                 try
                 {
                     byte[] responsebytes = client.UploadValues("http://" + this.scannerAddr.Text, "POST", reqparm);
                     string responsebody = Encoding.UTF8.GetString(responsebytes);
                     this.m_richtextboxDiagnostics.AppendText("response: " + responsebody + "\n");
+                    this.m_richtextboxDiagnostics.Update();
+                    int first = responsebody.IndexOf("href=");
+                    if (first > 0)
+                    {
+                        // hyperlink, extract and download
+                        first += 6;
+                        int last = responsebody.IndexOf('"', first + 1);
+                        if (last > first)
+                        {
+                            string filename = responsebody.Substring(first, last - first);
+                            string urlImage = "http://" + this.scannerAddr.Text + "/" + filename;
+                            string localFilename = filename;
+                            client.DownloadFile(urlImage, localFilename);
+                            System.Diagnostics.Process.Start(localFilename);
+                        }
+                    }
                 }
                 catch (SystemException ex)
                 {
@@ -70,6 +110,9 @@ namespace Client
                 this.deviceList.Items.Add(x);
                 deviceList.Enabled = false;
             }
+
+            this.m_comboboxColor.SelectedIndex = 0;
+            this.m_comboxBoxResolution.SelectedIndex = 0;
         }
 
         private void OnServiceAdded(object o, ServiceBrowseEventArgs args)
@@ -99,6 +142,11 @@ namespace Client
                 if (!deviceList.Items.Contains(device))
                 {
                     deviceList.Items.Add(device);
+                    if (deviceList.Items.Count == 1)
+                    {
+                        // first device added, select it
+                        deviceList.SelectedIndex = 0;
+                    }
                 }
             }, null);
 
