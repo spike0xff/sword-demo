@@ -1,5 +1,7 @@
 var http = require('http');
+var url = require('url');
 var util = require('util');
+var fs = require('fs');
 var path = require('path');
 var spawn = require('child_process').spawn;
 
@@ -9,16 +11,29 @@ http.createServer( function(req,res) {
    console.log('cwd:' + process.cwd());
    console.log(req);
 
-   // Handle POST...
-   if (req.method == 'POST' || req.method == 'GET') {
+   // parse the URL into protocol, host, port, pathname, etc.
+   var request = url.parse(req.url, true);
 
-      // Receive the (possible) POST data...
+   if (req.method == 'GET' && request.pathname == '/image.tif') {
+      // send the file
+      var filepath = path.join(__dirname, request.pathname);
+      console.log('reading file: '+filepath);
+      var file = fs.readFileSync(filepath);
+      var stat = fs.statSync(filepath);
+      res.writeHead(200, "OK", {
+         'Content-Type':'image/tiff',
+         'Content-Length': stat.size
+      });
+      res.end(file, 'binary');
+   } else if (req.method == 'POST' || req.method == 'GET') {
+      // Handle POST...
+      // Collect the (possible) POST data...
       var body = '';
       req.on('data', function(data) {
          body += data;
       });
 
-      // Handle the response...
+      // When the POST or GET has been completely received
       req.on('end', function() {
          // Spawn the scanner driver.
          // assumes this .js file is in the sword-demo/server directory
@@ -35,11 +50,13 @@ http.createServer( function(req,res) {
             output += 'STDERR: ' + data;
          });
 
-         // Write the response...
+         // When the spawned program closes stdout...
          child.stdout.on('end', function() {
+            // take collected output and write the response
             console.log('stdout end');
             res.writeHead(200, "OK", {'Content-Type':'text/html'});
             res.write('SWORD Scanning Server on nodejs\n');
+            res.write('<a href="image.tif">scanned TIFF</a>\n');
             res.write('--------- post body:\n');
             res.write(body+'\n');
             res.write('--------- spawn stdout:\n');
