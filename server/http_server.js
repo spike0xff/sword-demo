@@ -39,14 +39,18 @@ http.createServer( function(req,res) {
          req.post = querystring.parse(body);
          console.log('parsed query data:');
          console.log(req.post);
-         // Spawn the scanner driver.
-         // assumes this .js file is in the sword-demo/server directory
+         // supply default values for scan params
+         if (!req.post.pixelType) req.post.pixelType = 'gray';
+         if (!req.post.resolution) req.post.resolution = '200';
          var args =
             ["pixeltype="+req.post.pixelType, "resolution="+req.post.resolution, "html"];
          console.log('driver args:');
          console.log(args);
-         var child = spawn(path.join(__dirname, '../driver/driver'),args);
+         // Spawn the scanner driver.
+         // assumes this .js file is in the sword-demo/server directory
+         // and runs the scanner driver out of the sibling driver directory.
          var output = '';
+         var child = spawn(path.join(__dirname, '../driver/driver'),args);
 
          // Collect the data on standard in and error...
          child.stdout.on('data', function(data) {
