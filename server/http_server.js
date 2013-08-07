@@ -1,15 +1,18 @@
 var http = require('http');
 var util = require('util');
+var path = require('path');
 var spawn = require('child_process').spawn;
 
 http.createServer( function(req,res) {
    var currentTime = new Date();
    console.log('Client called at '+currentTime);
+   console.log('cwd:' + process.cwd());
+   console.log(req);
 
    // Handle POST...
-   if (req.method == 'POST') {
+   if (req.method == 'POST' || req.method == 'GET') {
 
-      // Receive the POST data...
+      // Receive the (possible) POST data...
       var body = '';
       req.on('data', function(data) {
          body += data;
@@ -18,7 +21,7 @@ http.createServer( function(req,res) {
       // Handle the response...
       req.on('end', function() {
          // Issue a command...
-         var child = spawn('/home/pi/cdrv/sword-demo/driver/driver', ["html"]);
+         var child = spawn(path.join(process.cwd(), '../driver/driver'), ["html"]);
          var output = '';
 
          // Collect the data on standard in and error...
